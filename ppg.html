@@ -1,0 +1,113 @@
+<!DOCTYPE HTML>
+<!--
+	Phantom by HTML5 UP
+	html5up.net | @ajlkn
+	Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
+-->
+<html>
+	<head>
+		<title>PPG Sensor</title>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+		<link rel="stylesheet" href="assets/css/main.css" />
+		<noscript><link rel="stylesheet" href="assets/css/noscript.css" /></noscript>
+	</head>
+	<body class="is-preload">
+		<!-- Wrapper -->
+			<div id="wrapper">
+
+				<!-- Header -->
+					<header id="header">
+						<div class="inner">
+
+							<!-- Logo -->
+								<a href="index.html" class="logo">
+									<span class="symbol"><img src="images/logo.svg" alt="" /></span><span class="title">Portfolio</span>
+								</a>
+
+							<!-- Nav -->
+								<nav>
+									<ul>
+										<li><a href="#menu">Menu</a></li>
+									</ul>
+								</nav>
+
+						</div>
+					</header>
+
+				<!-- Menu -->
+					<nav id="menu">
+						<h2>Menu</h2>
+						<ul>
+							<li><a href="index.html">Home</a></li>
+							<li><a href="generic.html">Ipsum veroeros</a></li>
+							<li><a href="generic.html">Tempus etiam</a></li>
+							<li><a href="generic.html">Consequat dolor</a></li>
+							<li><a href="elements.html">Elements</a></li>
+						</ul>
+					</nav>
+
+				<!-- Main -->
+					<div id="main">
+						<div class="inner">
+							<h1>Photoplysmography (PPG) Sensor</h1>
+							<span class="image main"><img src="images/ppg_1_cropped.jpg" alt="" /></span>
+							<p>This sensor was designed to measure PPG signals and calculate SPO2, heart rate, and blood pressure trending (BPT). I designed all parts of this including the enclosure, PCB, firmware, and all the hardware and firmware for the receiver. The BPT calculation and output was one of the major reasons for selecting the MAX30101 sensor and hub. You can communicate with the sensor directly via i2C, or you can put one of their sensor hubs in between to perform the aforementioned calculations. BPT is the only difficult calculation that I believe they are calculating with machine learning. I’ve already mentioned some of my gripes with the hub in my “handheld data acquisition system” listing and won’t repeat what can be read <a href="reach.html">here</a>.</p>
+							<p>When I first received my PCB from the fabricator I could perform continuous BPT measurements without having to reset the device. The measurements took about 100ms to update which was fine. The timing issues I discussed previously was compounded when trying to do the BPT calculations which caused a good amount of stutter. Maxim released a decent number of firmware updates for the hub so I figured it would be worthwhile to implement a scheme for updating the firmware on the sensor which could also maybe fix my timing issue. After updating the firmware I found they did away with the ability to continuously read the BPT value and it was now set up as a one shot which was not in the documentation packaged with the firmware. You have to perform a calibration procedure for every blood pressure measurement which results in a new point every 20 or 30 seconds which does not work for my application, so I removed the hub and again performed my own calculations.</p>
+							<span class="image right"><img src="images/ppg_2.jpg" alt="" /></span>
+							<p>I considered many different mechanisms of fixing the sensor to the user’s finger but ended up going with a strip of hook and latch. I found a manufacturer that could cut it to my specified shape and even print a logo on it, for a price that was well within budget. I designed the enclosure so the hook and latch would fix to it so it couldn’t get lost. The lid was a sliding door that locked into place when slid closed. I’ve found sliding doors with a lock tend to provide better results than annular snaps when 3D printing the enclosure. The image to the right shows what it looks like attached to my index finger and also gives a sense of scale.<p>
+						</div>
+					</div>
+
+				<!-- Footer -->
+					<footer id="footer">
+						<div class="inner">
+							<section>
+								<h2>Get in touch</h2>
+								<form method="post" action="#">
+									<div class="fields">
+										<div class="field half">
+											<input type="text" name="name" id="name" placeholder="Name" />
+										</div>
+										<div class="field half">
+											<input type="email" name="email" id="email" placeholder="Email" />
+										</div>
+										<div class="field">
+											<textarea name="message" id="message" placeholder="Message"></textarea>
+										</div>
+									</div>
+									<ul class="actions">
+										<li><input type="submit" value="Send" class="primary" /></li>
+									</ul>
+								</form>
+							</section>
+							<section>
+								<h2>Follow</h2>
+								<ul class="icons">
+									<li><a href="#" class="icon brands style2 fa-twitter"><span class="label">Twitter</span></a></li>
+									<li><a href="#" class="icon brands style2 fa-facebook-f"><span class="label">Facebook</span></a></li>
+									<li><a href="#" class="icon brands style2 fa-instagram"><span class="label">Instagram</span></a></li>
+									<li><a href="#" class="icon brands style2 fa-dribbble"><span class="label">Dribbble</span></a></li>
+									<li><a href="#" class="icon brands style2 fa-github"><span class="label">GitHub</span></a></li>
+									<li><a href="#" class="icon brands style2 fa-500px"><span class="label">500px</span></a></li>
+									<li><a href="#" class="icon solid style2 fa-phone"><span class="label">Phone</span></a></li>
+									<li><a href="#" class="icon solid style2 fa-envelope"><span class="label">Email</span></a></li>
+								</ul>
+							</section>
+							<ul class="copyright">
+								<li>&copy; Untitled. All rights reserved</li><li>Design: <a href="http://html5up.net">HTML5 UP</a></li>
+							</ul>
+						</div>
+					</footer>
+
+			</div>
+
+		<!-- Scripts -->
+			<script src="assets/js/jquery.min.js"></script>
+			<script src="assets/js/browser.min.js"></script>
+			<script src="assets/js/breakpoints.min.js"></script>
+			<script src="assets/js/util.js"></script>
+			<script src="assets/js/main.js"></script>
+
+	</body>
+</html>
