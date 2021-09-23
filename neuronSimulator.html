@@ -1,0 +1,258 @@
+<!DOCTYPE HTML>
+<!--
+	Phantom by HTML5 UP
+	html5up.net | @ajlkn
+	Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
+-->
+<html>
+	<head>
+		<title>Neuron Simulator</title>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+		<link rel="stylesheet" href="assets/css/main.css" />
+		<noscript><link rel="stylesheet" href="assets/css/noscript.css" /></noscript>
+	</head>
+	<body class="is-preload">
+		<!-- Wrapper -->
+			<div id="wrapper">
+
+				<!-- Header -->
+					<header id="header">
+						<div class="inner">
+
+							<!-- Logo -->
+								<a href="index.html" class="logo">
+									<span class="symbol"><img src="images/logo.svg" alt="" /></span><span class="title">Portfolio</span>
+								</a>
+
+							<!-- Nav -->
+								<nav>
+									<ul>
+										<li><a href="#menu">Menu</a></li>
+									</ul>
+								</nav>
+
+						</div>
+					</header>
+
+				<!-- Menu -->
+					<nav id="menu">
+						<h2>Menu</h2>
+						<ul>
+							<li><a href="index.html">Home</a></li>
+							<li><a href="generic.html">Ipsum veroeros</a></li>
+							<li><a href="generic.html">Tempus etiam</a></li>
+							<li><a href="generic.html">Consequat dolor</a></li>
+							<li><a href="elements.html">Elements</a></li>
+						</ul>
+					</nav>
+
+				<!-- Main -->
+					<div id="main">
+						<div class="inner">
+							<h1>Neuron Simulator</h1>
+							<span class="image main"><img src="images/neuronSimulator.jpg" alt="" /></span>
+							<p>These neuron simulators output nerve impulses based on the type of stimulation they received. Intuitively, the eye was stimulated by light and the ear by sound. I designed all components in this including the PCB, enclosure, and firmware. The PCB is the same for both variants. </p>
+							<h3>Eye Simulator</h3>
+							<p>The eye has a total of seven neurons. Four neurons simulate rods and the other three simulate cones. Each cone has sensitivity to a specific color. The red cone is most sensitive in the 600nm – 675nm region. The blue cone is most sensitive in the 440nm-510nm region. The green is most sensitive in the 525nm-590nm region. A graph of the response of each cone is shown below. The response of the white color in this graph is not implemented.</p>
+							<span class="image main"><img src="images/eye_response_diagram.jpg" alt="" /></span>
+							<div align="center"><strong>The sensitivity of the rods is shown below.</strong></div>
+							<span class="image main"><img src="images/eye_rod_response.jpg" alt="" /></span>
+							<p>Every cone neuron has a threshold that activates a pulse if the firing delay period has passed. The firing delay determines the maximum frequency of impulses when the cone neuron is saturated. The ratio between the strongest cone neuron and every other cone neuron define the length of the delay period multiplied by 5.  Mathematically the delay T for every cone neuron i is expressed as the ratio of potential multiplied by 5:
+							<div align="center"><code>Delay = 5*(P<sub>0</sub> / P<sub>i</sub>)T<sub>i</sub></code></div>
+							For example, if two cone neurons have potentials that are above the activation threshold but one cone neuron is twice as strong as the other so that P1 = 200 and P0 = 400 than the delay period with respect to the first cone neuron would be: 5*(400/200)*T<sub>i</sub> = 10T<sub>i</sub>. So if both cone neurons were saturated for a period of time we would expect to see ten times more occurrences of the cone neuron with the higher potential.</p>
+							<p>Variance is introduced to both amplitude and width of the neuron impulse. The mean values and variance for each neuron are shown in the table below.</p>
+							<section>
+								<div class="table-wrapper">
+									<table class="alt">
+										<thead>
+											<tr>
+												<th>Type/Color</th>
+												<th>Mean Width</th>
+												<th>Absolute Width Variance +/-200uSec</th>
+												<th>Mean Absolute Amplitude (Volts)</th>
+												<th>Absolute Amplitude Variance +/-5%</th>
+											</tr>
+										</thead>
+										<tbody>
+											<tr>
+												<td>Rod/White</td>
+												<td>2400 uSec</td>
+												<td>400uSec</td>
+												<td>1.853 V</td>
+												<td>185mV</td>
+											</tr>
+											<tr>
+												<td>Rod/White</td>
+												<td>3200 uSec</td>
+												<td>400uSec</td>
+												<td>2.162 V</td>
+												<td>216mV</td>
+											</tr>
+											<tr>
+												<td>Rod/White</td>
+												<td>3550 uSec</td>
+												<td>400uSec</td>
+												<td>2.780 V</td>
+												<td>278mV</td>
+											</tr>
+											<tr>
+												<td>Rod/White</td>
+												<td>4250 uSec</td>
+												<td>400uSec</td>
+												<td>2.470 V</td>
+												<td>247mV</td>
+											</tr>
+											<tr>
+												<td>Cone/Red</td>
+												<td>4700 uSec</td>
+												<td>400uSec</td>
+												<td>0.926 V</td>
+												<td>93mV</td>
+											</tr>
+											<tr>
+												<td>Cone/Green</td>
+												<td>5400 uSec</td>
+												<td>400uSec</td>
+												<td>1.236 V</td>
+												<td>124mV</td>
+											</tr>
+											<tr>
+												<td>Cone/Blue</td>
+												<td>6200 uSec</td>
+												<td>400uSec</td>
+												<td>1.544 V</td>
+												<td>154mV</td>
+											</tr>
+										</tbody>
+									</table>
+								</div>
+							</section>
+							<h3>Ear Simulator</h3>
+							<p>There are seven neurons that are each activated by different frequencies of sound. Each neuron has a different amplitude that is +/- 5% of the mean amplitude. The bands are 125Hz-250Hz, 250Hz-500Hz, 500Hz-1kHz, 1kHz-2kHz, 2kHz-4kHz, 4kHz-8kHz, and 8kHz-16kHz.</p>
+							<p>Each neuron has an action potential threshold that activates a pulse if the firing delay period has passed. The firing delay determines the maximum frequency of impulses when the neuron is saturated. The ratio between the strongest neuron and every other neuron define the length of the delay period multiplied by an order of magnitude.  Mathematically the delay T for every neuron i is expressed as the ratio of potential multiplied by an order of magnitude:</p>
+							<div align="center"><code>Delay = 10*(P<sub>0</sub> / P<sub>i</sub>)T<sub>i</sub></code></div>
+							<p>For example, if two neurons have potentials that are above the activation threshold but one neuron is twice as strong as the other so that P1 = 200 and P0 = 400 than the delay period with respect to the first neuron would be: 10*(400/200)*Ti = 20Ti. So if both neurons were saturated for a period of time we would expect to see twenty times more occurrences of the neuron with the higher potential.</p>
+							<p>The amplitude of different frequencies of sound are determined using an FFT. The length of the FFT was chosen to be small enough that there isn’t too much of a delay from when the sound is produced to when the neuron is activated. The FFT bin is 125Hz which reduces resolution in the lower band where there is only a difference of 125Hz. I've mapped the relative sensitivity of each neuron to the average point in the band according to the ISO 226:2003 Normal equal-loudness level contour at 60 phon. If the amplitude of the sound is loud enough, sub harmonics can activate other neurons at the firing frequency discussed above. I'm outputting data to the TA at 10kHz so a sample rate of 20kHz is suitable to capture the data.</p>
+							<p>Variance is introduced to both amplitude and width of the neuron impulse. The mean values and variance for each neuron are shown in the table below.</p>
+							<section>
+								<div class="table-wrapper">
+									<table class="alt">
+										<thead>
+											<tr>
+												<th>Band</th>
+												<th>Mean Width</th>
+												<th>Absolute Width Variance +/-200uSec</th>
+												<th>Mean Absolute Amplitude (Volts)</th>
+												<th>Absolute Amplitude Variance +/-5%</th>
+											</tr>
+										</thead>
+										<tbody>
+											<tr>
+												<td>125Hz-250Hz</td>
+												<td>1150 uSec</td>
+												<td>400uSec</td>
+												<td>1.853 V</td>
+												<td>185mV</td>
+											</tr>
+											<tr>
+												<td>250Hz-500Hz</td>
+												<td>1350 uSec</td>
+												<td>400uSec</td>
+												<td>2.162 V</td>
+												<td>216mV</td>
+											</tr>
+											<tr>
+												<td>500Hz-1kHz</td>
+												<td>1400 uSec</td>
+												<td>400uSec</td>
+												<td>2.780 V</td>
+												<td>278mV</td>
+											</tr>
+											<tr>
+												<td>1kHz-2kHz</td>
+												<td>1850 uSec</td>
+												<td>400uSec</td>
+												<td>2.470 V</td>
+												<td>247mV</td>
+											</tr>
+											<tr>
+												<td>2kHz-4kHz</td>
+												<td>2300 uSec</td>
+												<td>400uSec</td>
+												<td>0.926 V</td>
+												<td>93mV</td>
+											</tr>
+											<tr>
+												<td>4kHz-8kHz</td>
+												<td>2800 uSec</td>
+												<td>400uSec</td>
+												<td>1.236 V</td>
+												<td>124mV</td>
+											</tr>
+											<tr>
+												<td>8kHz-16kHz</td>
+												<td>4550 uSec</td>
+												<td>400uSec</td>
+												<td>1.544 V</td>
+												<td>154mV</td>
+											</tr>
+										</tbody>
+									</table>
+								</div>
+						</section>
+						</div>
+					</div>
+
+				<!-- Footer -->
+					<footer id="footer">
+						<div class="inner">
+							<section>
+								<h2>Get in touch</h2>
+								<form method="post" action="#">
+									<div class="fields">
+										<div class="field half">
+											<input type="text" name="name" id="name" placeholder="Name" />
+										</div>
+										<div class="field half">
+											<input type="email" name="email" id="email" placeholder="Email" />
+										</div>
+										<div class="field">
+											<textarea name="message" id="message" placeholder="Message"></textarea>
+										</div>
+									</div>
+									<ul class="actions">
+										<li><input type="submit" value="Send" class="primary" /></li>
+									</ul>
+								</form>
+							</section>
+							<section>
+								<h2>Follow</h2>
+								<ul class="icons">
+									<li><a href="#" class="icon brands style2 fa-twitter"><span class="label">Twitter</span></a></li>
+									<li><a href="#" class="icon brands style2 fa-facebook-f"><span class="label">Facebook</span></a></li>
+									<li><a href="#" class="icon brands style2 fa-instagram"><span class="label">Instagram</span></a></li>
+									<li><a href="#" class="icon brands style2 fa-dribbble"><span class="label">Dribbble</span></a></li>
+									<li><a href="#" class="icon brands style2 fa-github"><span class="label">GitHub</span></a></li>
+									<li><a href="#" class="icon brands style2 fa-500px"><span class="label">500px</span></a></li>
+									<li><a href="#" class="icon solid style2 fa-phone"><span class="label">Phone</span></a></li>
+									<li><a href="#" class="icon solid style2 fa-envelope"><span class="label">Email</span></a></li>
+								</ul>
+							</section>
+							<ul class="copyright">
+								<li>&copy; Untitled. All rights reserved</li><li>Design: <a href="http://html5up.net">HTML5 UP</a></li>
+							</ul>
+						</div>
+					</footer>
+
+			</div>
+
+		<!-- Scripts -->
+			<script src="assets/js/jquery.min.js"></script>
+			<script src="assets/js/browser.min.js"></script>
+			<script src="assets/js/breakpoints.min.js"></script>
+			<script src="assets/js/util.js"></script>
+			<script src="assets/js/main.js"></script>
+
+	</body>
+</html>
