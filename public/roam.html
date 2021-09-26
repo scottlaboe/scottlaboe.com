@@ -1,0 +1,96 @@
+<!DOCTYPE HTML>
+<!--
+	Phantom by HTML5 UP
+	html5up.net | @ajlkn
+	Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
+-->
+<html>
+	<head>
+		<!-- Global site tag (gtag.js) - Google Analytics -->
+		<script async src="https://www.googletagmanager.com/gtag/js?id=G-TLPNRV5NC7"></script>
+		<script>
+		window.dataLayer = window.dataLayer || [];
+		function gtag(){dataLayer.push(arguments);}
+		gtag('js', new Date());
+
+		gtag('config', 'G-TLPNRV5NC7');
+		</script>
+		
+		<title>Wireless ECG</title>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+		<link rel="stylesheet" href="assets/css/main.css" />
+		<noscript><link rel="stylesheet" href="assets/css/noscript.css" /></noscript>
+	</head>
+	<body class="is-preload">
+		<!-- Wrapper -->
+			<div id="wrapper">
+
+				<!-- Header -->
+					<header id="header">
+						<div class="inner">
+
+							<!-- Logo -->
+								<a href="index.html" class="logo">
+									<span class="symbol"><img src="images/logo.svg" alt="" /></span><span class="title">Portfolio</span>
+								</a>
+
+							<!-- Nav -->
+								<nav>
+									<ul>
+										<li><a href="#menu">Menu</a></li>
+									</ul>
+								</nav>
+
+						</div>
+					</header>
+
+				<!-- Menu -->
+				<nav id="menu">
+					<h2>Menu</h2>
+					<ul>
+						<li><a href="index.html">Portfolio</a></li>
+						<li><a href="contactInfo.html">Contact Info</a></li>
+					</ul>
+				</nav>
+				
+				<!-- Main -->
+					<div id="main">
+						<div class="inner">
+							<h1>Wireless ECG System</h1>
+							<span class="image main"><img src="images/IXR-ECG.jpg" alt="" /></span>
+							<p>This was my first experience developing code for a BLE connected device. This device can wirelessly transmit accelerometer and ECG data to a receiver so it can be processed by data logging software. I didn’t get a chance to work on the hardware, but I did write code for the firmware and develop the enclosure and charging box. This was the first acquisition system I worked on that didn’t have real-time data transmission which resulted in some special requirements for buffering and packing the data. There were two variants of receiver: USB and a proprietary UART for interfacing with an existing acquisition system. The chain of communication was comprised of three microcontrollers for the USB and four for the UART. This necessitated a communication structure that allowed me to address data to or from some target microcontroller.</p>
+							<p>There are plenty of asynchronous events that can occur within the system such as a disconnect. I created a notification channel to alert the host controller to respond in some way. I also used this channel to queue asynchronous data from the Bluetooth peripheral so that I could readily respond to requests from the host computer. </p>
+							<p>Bandwidth can also become a problem if care isn’t taken to ensure you have enough bandwidth overhead to “catch up” if one or more packets fails to transmit from the peripheral. With a larger MTU the impact of a dropped packet becomes greater than with a smaller MTU provided your latency is held constant. With a fixed data rate, minimizing latency inherently reduces the MTU size which improves data fidelity. If the device dropped a packet, I needed to make sure I had enough overhead to send two packets without increasing latency long-term. To solve this problem, I set the latency as low as it would go (7.5ms) but setup my peripheral to only transmit data every 20ms. Th difference between the connection latency and packet timer on the device allow it to recover from failed transmissions more quickly. The device will only buffer so many packets before it is forced to start dropping packets to acquire new data.</p>
+							<p>I modeled and printed a charger box for the enclosure using an annular snap around the pocket for the device to hold it in place during charging. It worked OK but sometimes if you didn’t insert it right it wouldn’t make good contact with the charging pads. There was a steel can to protect the analog portion of the circuit from noise that I figured I could use to magnetically pull the device into the right position. This worked much better and was implemented in my final revision. The roam lettering on the top of the box had the dual purpose of looking cool and holding the device in place.</p>
+							<p>Here is a little animation I made in Blender.</p>
+							<div align="center"><iframe width="560" height="315" src="https://www.youtube.com/embed/yFc0a2zqmLw" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>
+						</div>
+					</div>
+
+				<!-- Footer -->
+				<footer>
+					<div align="center">
+						<section>
+							<h2>Follow</h2>
+							<ul class="icons">
+								<li><a href="https://github.com/scottlaboe" class="icon brands style2 fa-github"><span class="label">GitHub</span></a></li>
+								<li><a href="mailto:scottyl2.718@gmail.com" class="icon solid style2 fa-envelope"><span class="label">Email</span></a></li>
+							</ul>
+						</section>
+						<ul class="copyright">
+							Design: <a href="http://html5up.net">HTML5 UP</a>
+						</ul>
+					</div>
+				</footer>
+			</div>
+
+		<!-- Scripts -->
+			<script src="assets/js/jquery.min.js"></script>
+			<script src="assets/js/browser.min.js"></script>
+			<script src="assets/js/breakpoints.min.js"></script>
+			<script src="assets/js/util.js"></script>
+			<script src="assets/js/main.js"></script>
+
+	</body>
+</html>

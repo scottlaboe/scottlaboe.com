@@ -1,0 +1,97 @@
+<!DOCTYPE HTML>
+<!--
+	Phantom by HTML5 UP
+	html5up.net | @ajlkn
+	Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
+-->
+<html>
+	<head>
+		<!-- Global site tag (gtag.js) - Google Analytics -->
+		<script async src="https://www.googletagmanager.com/gtag/js?id=G-TLPNRV5NC7"></script>
+		<script>
+		window.dataLayer = window.dataLayer || [];
+		function gtag(){dataLayer.push(arguments);}
+		gtag('js', new Date());
+
+		gtag('config', 'G-TLPNRV5NC7');
+		</script>
+		
+		<title>Handheld Acquistion System</title>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+		<link rel="stylesheet" href="assets/css/main.css" />
+		<noscript><link rel="stylesheet" href="assets/css/noscript.css" /></noscript>
+	</head>
+	<body class="is-preload">
+		<!-- Wrapper -->
+			<div id="wrapper">
+
+				<!-- Header -->
+					<header id="header">
+						<div class="inner">
+
+							<!-- Logo -->
+								<a href="index.html" class="logo">
+									<span class="symbol"><img src="images/logo.svg" alt="" /></span><span class="title">Portfolio</span>
+								</a>
+
+							<!-- Nav -->
+								<nav>
+									<ul>
+										<li><a href="#menu">Menu</a></li>
+									</ul>
+								</nav>
+
+						</div>
+					</header>
+
+				<!-- Menu -->
+				<nav id="menu">
+					<h2>Menu</h2>
+					<ul>
+						<li><a href="index.html">Portfolio</a></li>
+						<li><a href="contactInfo.html">Contact Info</a></li>
+					</ul>
+				</nav>
+
+				<!-- Main -->
+					<div id="main">
+						<div class="inner">
+							<h1>Remote Learning Acquisition System</h1>
+							<span class="image main"><img src="images/REACH-DL_3.jpg" alt="" /></span>
+							<p>This was a project spurred by an increased demand for high quality remote learning tools. For this device I designed the PCB, firmware, mechanical enclosure, QA procedures, assembly procedures, EVA cutouts for shipping, and handled some of the procurement of specialized components. The initial production run was for 1,000 units which I was able to accomplish in under 6 months. I used an M4 microcontroller to gather data from the sensors through i2c, SPI, and GPIO to gather data into a buffer class and synchronously transmit data to our logging software over USB. </p>
+							<p>The device can measure pressure, photoplethysmography (PPG), ECG, headphone output, and has a button to measure reaction times to an RGB LED on the device. Having just designed the PCB for a standalone PPG sensor I decided I would use an i2c based sensor with an integrated ADC that communicated with a “sensor hub” that did some nice calculations for you such as SPO2, heart rate, and a few others that weren’t particularly useful for my application. The development schedule for this was tight so I wanted to minimize unknowns by selected components that already had things “figured out.” If only things worked as you expect…</p>
+							<p>When designing the firmware, I decided I would try C++ to see if I could increase the reusability of my code. I designed communication classes which could be inherited by a device class so if the ECG analog front-end used SPI I could configure it as an SPI device by simply inheriting an interface class and implementing a virtual processData function. This worked pretty well but got messy when mapping hardware interrupts. I ended up creating a registration class to handle interrupt events and dispatch them to subscribed classes.</p>
+							<p>The sensor hub couldn’t handle communications above a certain interval which changed for different commands. The standard was a 20ms delay. This turned out to be kind of a pain because I had to create a command queue with the timing information for each command in the command structure. I’d process the next command after each command finished transmitting by loading the delay into a one-shot timer interrupt and processing the command at the interrupt. A fixed latency I can handle, but the latency on the sensor hub was anything but fixed. The granularity of the data output timer on the sensor hub was absurdly large, something like 20ms so if I requested data from the hub and it was busy it would be another 20ms before I received all the data. To get this sensor hub to output data at a regular rate I end up trying to set my frequency by trial and error so that my requests don’t line up with internal processes on the hub until I get consistent data output. I could rant about the many other problems I had with this thing but let’s end it there and just say I removed the sensor hub in the next revision (which would be the final revision). I performed the calculations myself and washed my hands of this sensor hub business.</p>
+							<p>When designing the enclosure, I decided to integrate the luer connector so I could simplify assembly and reduce the overall thickness of the enclosure. Deciding on a method of production was something I also had to consider. This was a product that finally had enough volume that I could get it injection molded! Alas, I had to put aside my ambitions and stick with what I knew to ensure I could meet the expected ship date. We scaled up our 3D printer capacity and started printing the cases before I finished the firmware or even the final PCB revision.</p>
+							<p>After finishing the firmware, the benefits of using an RTOS became more apparent. Having to write the code for a command queue and that would trigger a one-shot timer interrupt wasn’t necessarily complicated, but it involves some debugging for code that I wouldn’t have needed to write if I had used an RTOS. </p>
+							<span class="image main"><img src="images/REACH-DL_2.jpg" alt="" /></span>
+						</div>
+					</div>
+
+				<!-- Footer -->
+				<footer>
+					<div align="center">
+						<section>
+							<h2>Follow</h2>
+							<ul class="icons">
+								<li><a href="https://github.com/scottlaboe" class="icon brands style2 fa-github"><span class="label">GitHub</span></a></li>
+								<li><a href="mailto:scottyl2.718@gmail.com" class="icon solid style2 fa-envelope"><span class="label">Email</span></a></li>
+							</ul>
+						</section>
+						<ul class="copyright">
+							Design: <a href="http://html5up.net">HTML5 UP</a>
+						</ul>
+					</div>
+				</footer>
+			</div>
+
+		<!-- Scripts -->
+			<script src="assets/js/jquery.min.js"></script>
+			<script src="assets/js/browser.min.js"></script>
+			<script src="assets/js/breakpoints.min.js"></script>
+			<script src="assets/js/util.js"></script>
+			<script src="assets/js/main.js"></script>
+
+	</body>
+</html>
