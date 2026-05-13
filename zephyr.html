@@ -1,0 +1,304 @@
+<!DOCTYPE HTML>
+<!--
+	Phantom by HTML5 UP
+	html5up.net | @ajlkn
+	Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
+-->
+<html>
+	<head>
+		<!-- Global site tag (gtag.js) - Google Analytics -->
+		<script async src="https://www.googletagmanager.com/gtag/js?id=G-TLPNRV5NC7"></script>
+		<script>
+		window.dataLayer = window.dataLayer || [];
+		function gtag(){dataLayer.push(arguments);}
+		gtag('js', new Date());
+
+		gtag('config', 'G-TLPNRV5NC7');
+		</script>
+		
+		<title>Zephyr Acquisition Framework</title>
+		<link rel="icon" type="image/svg" href="/images/favicon.svg">
+		<meta charset="utf-8" />
+		<meta name="description" content="How I built a portable Zephyr-based acquisition framework: devicetree-driven channel maps, protobuf interface, and DFU-flashed Twister tests on every commit." />
+		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+		<link rel="stylesheet" href="assets/css/main.css" />
+		<noscript><link rel="stylesheet" href="assets/css/noscript.css" /></noscript>
+	</head>
+	<body class="is-preload">
+		<!-- Wrapper -->
+			<div id="wrapper">
+
+				<!-- Header -->
+					<header id="header">
+						<div class="inner">
+
+							<!-- Logo -->
+								<a href="index.html" class="logo">
+									<span class="symbol"><img src="images/logo.svg" alt="" /></span><span class="title">Portfolio</span>
+								</a>
+
+							<!-- Nav -->
+								<nav>
+									<ul>
+										<li><a href="#menu">Menu</a></li>
+									</ul>
+								</nav>
+
+						</div>
+					</header>
+
+				<!-- Menu -->
+				<nav id="menu">
+					<h2>Menu</h2>
+					<ul>
+						<li><a href="index.html">Portfolio</a></li>
+						<li><a href="contactInfo.html">Contact Info</a></li>
+					</ul>
+				</nav>
+				
+				<!-- Main -->
+					<div id="main">
+						<div class="inner">
+							<h1>Zephyr Acquisition Framework</h1>
+							<h2>Status Quo</h2>
+							<p>Most of the firmware I design is for acquisition systems that gather data from some number of ADCs and/or integrated I2C/SPI sensors and sends it to a host system through some PHY (USB, BLE, etc.) so the user can see and record data in real-time. Each device has its own firmware project and little is shared between them because the code is highly specialized for each microcontroller and is tested by hand. Testing by hand means it is better to keep code completely separate so changes in one doesn't break another. Some code can be copied from project to project as long as the same microcontroller is used.</p>
+							<p>The interface for each acquisition device can vary from device to device and consists of enums for command indexing and structs for data transport. Larger structs are used to configure the device and rely on the C++ acquisition software to store structs in the same way as firmware; a bad assumption.</p>
+							<p>The acquisition software "knows" what the device can do because each device has its own class with hardcoded values about the hardware and channel mapping. This has the advantage of keeping devices somewhat isolated in the acquisition software but requires any changes in firmware to be updated in the acquisition software. If different revisions of firmware change or expand channel functionality, the software must look at the firmware revision and have hardcoded decisions for each firmware revision.</p>
+							<h2>Ideals</h2>
+							<p>This approach introduces some challenges that I aim to mitigate through a common framework.</p>
+							<h3>Testability</h3>
+							<p>When a bug is discovered in firmware it is fixed and tested for each device by hand. If a bug is discovered while developing code for a new project, you have to remember to look at old code that uses the same or similar code. Combing through many different projects is tedious and distracting when you are trying to focus on problems within the current project.</p>
+							<p>Any code that is common between firmwares has to be kept quite simple to limit the risk that a bug fixed for one firmware causes issues in another. Since testing is done by hand, bugs are only discovered if I carefully test each firmware that uses the modified shared code. The acquisition core can be separated into common code, but its reliance on hardware-specific peripherals requires a layer of abstraction.</p>
+							<p>Application logic can be tested with unit tests, but they would need to be maintained for each project. Zephyr provides both the hardware abstraction layer and a framework to parse and run all tests within the acquisition module using Twister.</p>
+							<p>For every device that uses my Zephyr framework I add it to my test bench which is just a Linux server with a lot of USB hubs that are supported by <a href="https://github.com/mvp/uhubctl">uhubctl</a>. Each device has a modified bootloader that will always enter DFU mode when the device is reset, so at the start of every test I simply cycle the power with uhubctl, flash the test app with dfu-util, and run the test, all of which is easily scripted. The USB port is set up as a composite device so I can easily associate the serial device in Linux with its associated hardware and provide useful logs for debugging test failures.</p>
+							<p>The core of my acquisition test is the same for each device, but the specific functionality to test is determined by the devicetree. For this purpose I've created test fixture nodes such as a loopback node where a DAC feeds an ADC input, so the entire test runs on the device without any hardware dependencies; everything goes through USB and is managed by the microcontroller. This keeps all documentation about the test jig right next to the firmware.</p>
+							<p>Implementing DFU from day one is a necessity, and it needs to be very thoroughly tested. My strategy is to keep the bootloader immutable so I always have a recovery path for the device, which requires the bootloader to be simple and the most heavily tested component of the system. Having the test flash devices via DFU simplifies the test setup but also exercises the DFU flow for every test. A DFU failure is a test failure.</p>
+							<h3>Portability</h3>
+							<p>I work with a number of microcontrollers from Nordic and Nuvoton including the nRF52 and M480 respectively. The framework needs to be portable between these microcontrollers.</p>
+							<h3>Scalability</h3>
+							<p>Modular, well-tested code enables quicker deployment and adaptability. Portability also plays a role in how well the application can scale to changes in hardware requirements.</p>
+							<h2>Implementation</h2>
+							<p>There are many different approaches to solving the problems I've identified above. Zephyr suited my needs nicely and provides the devicetree — a great tool for abstracting hardware that I use to map hardware to my acquisition framework. The build system (West) allows efficient implementation of my requirements through feature enablement (Kconfig) and inclusion through preprocessor directives which is awesome for keeping binaries trim with no runtime cost.</p>
+							<h3>Device Interface</h3>
+							<p>Enforcing a common interface for each device using a common, extensible serialization scheme such as protobuf simplifies the testing approach and improves readability with tests that describe behavior in stages rather than duplicating commonality to exercise the specific functionality of each device.</p>
+							<p>Zephyr provides integration with nanopb which made it easy to adopt for serialization/deserialization of interface packets (messages for acquisition control, setup, etc.). It allows me to efficiently pack data and statically allocate variably-sized struct members that change depending on the device's capability (such as acquisition channel descriptors).</p>
+							<h3>Acquisition Mapping</h3>
+							<p>I decided to map acquisition channels to hardware resources using the devicetree. I considered creating my own YAML parser to achieve this but decided I could achieve what I needed more readily with the devicetree. There are some challenges using the devicetree as it uses explicit language which is not always ideal for my application. For example, I want to create channel nodes to map hardware resources where the position of each channel node determines its ID. This results in somewhat complex and less intuitive macro expansions to get the index of each channel node while accounting for the channel node being enabled or disabled by setting the 'status' property. Alternatively, I could just set the channel index manually but I wanted to keep the acquisition map as clutter-free as possible so it could succinctly describe the system while avoiding indexing errors that aren't always easy to detect. If I were to explicitly set the channel ID for each node and wanted to use a devicetree overlay for different device configurations I would have to either copy the entire map into each overlay file or manually compare each overlay with the base map to ensure I wasn't missing or redefining channel IDs.</p>
+							<p>Having the acquisition map in a single location (the build system parses any overlays into a single acquisition map), I can easily generate an acquisition descriptor map that I can send back to the host system to define the capability and channel mapping of the device.</p>
+							<h3>Node Interpretation</h3>
+							<p>There are a few different base types of node that I want to encapsulate in the acquisition map: acquisition endpoints, acquisition sources, and output sources. The diagram below shows how they fit together at runtime for a heater controller:</p>
+<svg viewBox="0 0 860 540" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="dataflow-title" style="max-width:100%;height:auto;display:block;margin:1.5em auto;">
+	<title id="dataflow-title">Acquisition framework data flow</title>
+	<defs>
+		<marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+			<path d="M0,0 L10,5 L0,10 Z" fill="currentColor"/>
+		</marker>
+		<style>
+			.box  { fill: none; stroke: currentColor; stroke-width: 1.5; }
+			.lbl  { font: 14px 'Source Sans Pro', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; fill: currentColor; }
+			.bold { font-weight: 600; }
+			.sm   { font: 12px 'Source Sans Pro', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; fill: currentColor; opacity: 0.7; }
+			.head { font: 600 11px 'Source Sans Pro', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; fill: currentColor; letter-spacing: 0.1em; opacity: 0.55; }
+			.flow { stroke: currentColor; stroke-width: 1.5; fill: none; }
+		</style>
+	</defs>
+
+	<text class="head" x="130" y="22" text-anchor="middle">DATA SOURCES</text>
+	<text class="head" x="420" y="22" text-anchor="middle">STORAGE</text>
+	<text class="head" x="710" y="22" text-anchor="middle">TRANSPORT</text>
+
+	<rect class="box" x="30"  y="50" width="200" height="115" rx="6"/>
+	<text class="lbl" x="130" y="85"  text-anchor="middle">ADC</text>
+	<text class="lbl" x="130" y="130" text-anchor="middle">Sensor (I2C / SPI)</text>
+	<text class="sm"  x="130" y="158" text-anchor="middle">iworx,acq-sources</text>
+
+	<rect class="box" x="340" y="73" width="160" height="70" rx="6"/>
+	<text class="lbl bold" x="420" y="100" text-anchor="middle">acq_buf</text>
+	<text class="sm"  x="420" y="123" text-anchor="middle">DMA or ring</text>
+
+	<rect class="box" x="610" y="50" width="200" height="115" rx="6"/>
+	<text class="lbl" x="710" y="85"  text-anchor="middle">USB</text>
+	<text class="lbl" x="710" y="130" text-anchor="middle">UART</text>
+	<text class="sm"  x="710" y="158" text-anchor="middle">iworx,acq-endpoints</text>
+
+	<path class="flow" d="M 230 108 L 338 108" marker-end="url(#arr)"/>
+	<text class="sm" x="284" y="100" text-anchor="middle">per-tick samples</text>
+
+	<path class="flow" d="M 500 108 L 608 108" marker-end="url(#arr)"/>
+	<text class="sm" x="554" y="100" text-anchor="middle">send</text>
+
+	<path class="flow" d="M 810 108 L 850 108" marker-end="url(#arr)"/>
+	<text class="sm" x="828" y="100" text-anchor="middle">host</text>
+
+	<path class="flow" d="M 760 165 L 760 285" marker-end="url(#arr)"/>
+	<text class="sm" x="770" y="205" text-anchor="start">commands</text>
+	<text class="sm" x="770" y="220" text-anchor="start">+ config</text>
+	<text class="sm" x="770" y="235" text-anchor="start">(nanopb → Zbus)</text>
+
+	<rect class="box" x="610" y="285" width="200" height="75" rx="6"/>
+	<text class="lbl bold" x="710" y="313" text-anchor="middle">Feedback (PID)</text>
+	<text class="sm" x="710" y="335" text-anchor="middle">iworx,feedback</text>
+	<text class="sm" x="710" y="351" text-anchor="middle">iworx,fb-ctrl-pid</text>
+
+	<path class="flow" d="M 460 143 C 460 230, 660 230, 660 285" marker-end="url(#arr)"/>
+	<text class="sm" x="595" y="215" text-anchor="middle">feedback input</text>
+
+	<path class="flow" d="M 710 360 L 710 430" marker-end="url(#arr)"/>
+	<text class="sm" x="720" y="397" text-anchor="start">control</text>
+
+	<rect class="box" x="610" y="430" width="200" height="95" rx="6"/>
+	<text class="lbl" x="710" y="460" text-anchor="middle">GPIO</text>
+	<text class="lbl" x="710" y="485" text-anchor="middle">PWM</text>
+	<text class="sm"  x="710" y="513" text-anchor="middle">iworx,output-sources</text>
+
+	<path class="flow" d="M 610 478 L 270 478 L 270 130 L 338 130" marker-end="url(#arr)"/>
+	<text class="sm" x="440" y="472" text-anchor="middle">acquisition feedback</text>
+</svg>
+							<h4>Acquisition Endpoints</h4>
+							<p>Acquisition endpoints define destinations where acquired data can be sent and can also process command/control packets by default. There are a couple of formats for data that offer different benefits depending on which endpoint type is used and the sample rate(s). For example, if you are recording data from multiple channels at different sample rates over USB, it is simpler to just re-sample the data and clock a frame of data at the highest sample period. This isn't a problem because I always have an excess of bandwidth on high-speed USB with the sample rates I am interested in. PHYs with higher energy costs and/or reduced throughput such as BLE require a different approach because resampled data can get expensive quickly.</p>
+							<h4>Acquisition Sources</h4>
+							<p>Acquisition sources provide data consumed by acquisition endpoints. Each source is bound to a specific Zephyr API such as: sensor, ADC, and GPIO. Each acquisition source node is a child of a master acquisition source node that contains all acquisition sources so I can easily parse each acquisition source into the common acquisition source's code.</p>
+							<p>A source can split data into multiple channels so I have two types of channels: compound and single. Compound channels are used when it makes more sense to read a channel in one operation then parse the values into multiple channels. This is currently only implemented for the sensor API which I use to split values from an I2C accelerometer into a channel for each axis.</p>
+							<h4>Output Sources</h4>
+							<p>Another requirement for the acquisition systems I work on is synchronous output to provide stimulus or support acquisition (such as a pump). I need to be able to feed back the output value to the user so they can correlate stimulus with a response (from a sensor, ADC, etc.) which means output sources also need to be able to write into the acquisition buffer.</p>
+							<p>The output source nodes I've written thus far adapt to Zephyr's GPIO and PWM APIs. Each output node has access to a sequencer by default, though I can redefine the size of the sequencer buffer reserved for each output source as required by the application. For instance, some outputs such as a pump for a gas analyzer only need to be set once and don't need to be sequenced during a recording.</p>
+							<h3>Example</h3>
+							<p>Let's take a look at a working example for a temperature controlled heat bed, to get a better sense for how this works in practice:</p>
+<pre><code>device_mapping: device-mapping {
+	compatible = "iworx,device-map";
+	status = "okay";
+
+	device-name = "Sample_Heater_Controller";
+
+	acq_endpoints: acq-endpoints {
+		compatible = "iworx,acq-endpoints";
+		status = "okay";
+
+		acq_ep_usb: acq-ep-usb {
+			compatible = "iworx,acq-ep-usb";
+			status = "okay";
+
+			phy = "usb";
+			bus = <&hsusbd>;
+			is-host-port;
+		};
+
+		acq_ep_shell: acq-ep-shell {
+			compatible = "iworx,acq-ep-uart";
+			status = "okay";
+
+			phy = "uart";
+			bus = <&uart1>;
+			is-host-port;
+		};
+	};
+
+	channel_sources: channel_sources {
+		compatible = "iworx,acq-sources";
+		status = "okay";
+
+		heater_ntc_source: heater-ntc-source {
+			compatible = "iworx,acq-ch-src-sensor";
+			status = "okay";
+
+			sensor = <&heater_ntc>;
+
+			heater_thermistor_ch: heater_thermistor_ch {
+				compatible = "iworx,acq-ch";
+				status = "okay";
+
+				ch-unit = "AMBIENT_TEMP";
+				max-sample-rate-hz = <10000>;
+			};
+		};
+	};
+
+	output_sources: output-sources {
+		compatible = "iworx,output-sources";
+		status = "okay";
+
+		pwm_output {
+			compatible = "iworx,output-ch-src-pwm";
+			status = "okay";
+			
+			pwms =  <&epwm1 5 PWM_USEC(100) PWM_POLARITY_NORMAL>;  // Heater pwm
+
+			heater_drv_ch: heater_drv_ch {
+				compatible = "iworx,output-ch";
+				status = "okay";
+
+				min-output = <0>;
+				max-output = <70>;
+
+				unit = "LIGHT_DUTY_CYCLE";
+				scale = <1>;
+				max-val = <255>;
+				units-per-lsb = <1>;
+			};
+		};
+	};
+
+	feedback_sources: feedback-sources {
+		compatible = "iworx,feedback-sources";
+		status = "okay";
+
+		heater_ctrl: heater-ctrl {
+			compatible = "iworx,feedback";
+			status = "okay";
+
+			default-mode = "PID";
+			input = <&heater_thermistor_ch>;
+			output = <&heater_drv_ch>;
+			use-callback;
+
+			heater_pid: heater-pid {
+				compatible = "iworx,fb-ctrl-pid";
+				status = "okay";
+
+				p = <600>;
+				i = <10>;
+				d = <0>;
+				div = <1000>;
+			};
+		};
+	};
+};
+</code></pre>
+						<p>Notice that I have all my acquisition endpoint nodes in an "iworx,acq-endpoints" compatible, all my acquisition sources in an "iworx,acq-sources" compatible, and all of my output sources in an "iworx,output-sources" compatible. Grouping these three basic types into a single node simplifies parsing from the devicetree into an array managed by common code for each respective type.</p>
+						<h4>Device Info</h4>
+						<p>The device name is parsed by a macro and expands to an enum defined by the protobuf file that defines the interface for every acquisition device. This is one of the fields populated in a device's info packet which is also defined in the acquisition device proto file. The phy and name of each acquisition endpoint is also added to the device info packet along with acquisition and output channels. When the acquisition software requests info about the device it returns an info packet which it uses to populate the UI.</p>
+						<h4>Acquisition Configuration</h4>
+						<p>When configuration and setup data is received by an acquisition endpoint that has message parsing enabled it is parsed into a struct defined in the acquisition device proto file by nanopb. The struct is then published into Zephyr's messaging bus which is called Zbus. Every packet type is defined in a single device packet union using protobuf's oneof to keep deserialization straightforward.</p>
+						<h4>Build System</h4>
+						<p>The acquisition core connects to Zephyr's device APIs through intermediate "API adapters" which parse acquisition messages and set up each enabled device accordingly. For example, when a "iworx,acq-ch-src-gpios" compatible node is defined, the "CONFIG_IWORX_ACQ_CH_SRC_GPIO" is defined because it is enabled by default but depends on the "DT_HAS_IWORX_ACQ_CH_SRC_GPIO" symbol which is defined by Zephyr's build system. </p>
+						<h2>Summary</h2>
+						<p>The greatest benefit to all this systemization and modularity can be summarized simply: reliability. Whether you have just one product or numerous, there is enormous benefit in pipelining firmware to pull in as many well-tested components as possible, so you can start working on your next great piece of firmware with an inherent testing framework, a singular interface, and a solid update strategy.</p>
+						</div>
+					</div>
+
+				<!-- Footer -->
+				<footer>
+					<div align="center">
+						<section>
+							<h2>Follow</h2>
+							<ul class="icons">
+								<li><a href="https://github.com/scottlaboe" class="icon brands style2 fa-github"><span class="label">GitHub</span></a></li>
+								<li><a href="mailto:scottyl2.718@gmail.com" class="icon solid style2 fa-envelope"><span class="label">Email</span></a></li>
+							</ul>
+						</section>
+						<ul class="copyright">
+							<li>Design: <a href="http://html5up.net">HTML5 UP</a></li>
+						</ul>
+					</div>
+				</footer>
+			</div>
+
+		<!-- Scripts -->
+			<script src="assets/js/jquery.min.js"></script>
+			<script src="assets/js/browser.min.js"></script>
+			<script src="assets/js/breakpoints.min.js"></script>
+			<script src="assets/js/util.js"></script>
+			<script src="assets/js/main.js"></script>
+
+	</body>
+</html>
