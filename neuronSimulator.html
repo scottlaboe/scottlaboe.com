@@ -19,6 +19,7 @@
 		<title>Neuron Simulator</title>
 		<link rel="icon" type="image/svg" href="/images/favicon.svg">
 		<meta charset="utf-8" />
+		<meta name="description" content="Eye and ear neuron-impulse simulators driven by photodiode and microphone front-ends, using onboard DSP CMSIS FFTs to map sound frequencies to action potentials." />
 		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
 		<link rel="stylesheet" href="assets/css/main.css" />
 		<noscript><link rel="stylesheet" href="assets/css/noscript.css" /></noscript>
@@ -67,13 +68,13 @@
 							<span class="image main"><img src="images/eye_response_diagram.jpg" alt="" /></span>
 							<span class="image left">
 								<figure>
-									<img src='images/eye_rod_response.jpg' alt='missing' />
+									<img src='images/eye_rod_response.jpg' alt='Rod response curve' />
 									<figcaption>Rod Response</figcaption>
 								</figure>
 							</span>
-							<p>Every cone neuron has a threshold that activates a pulse if the firing delay period has passed. The firing delay determines the maximum frequency of impulses when the cone neuron is saturated. The ratio between the strongest cone neuron and every other cone neuron define the length of the delay period multiplied by 5.  Mathematically the delay T for every cone neuron i is expressed as the ratio of potential multiplied by 5:
+							<p>Every cone neuron has a threshold that activates a pulse if the firing delay period has passed. The firing delay determines the maximum frequency of impulses when the cone neuron is saturated. The ratio between the strongest cone neuron and every other cone neuron define the length of the delay period multiplied by 5.  Mathematically the delay T for every cone neuron i is expressed as the ratio of potential multiplied by 5:</p>
 							<div align="center"><code>Delay = 5*(P<sub>0</sub> / P<sub>1</sub>)T<sub>i</sub></code></div>
-							For example, if two cone neurons have potentials that are above the activation threshold but one cone neuron is twice as strong as the other so that P<sub>1</sub> = 200 and P<sub>0</sub> = 400 than the delay period with respect to the first cone neuron would be: 5*(400/200)*T<sub>i</sub> = 10T<sub>i</sub>. So if both cone neurons were saturated for a period of time we would expect to see ten times more occurrences of the cone neuron with the higher potential.</p>
+							<p>For example, if two cone neurons have potentials that are above the activation threshold but one cone neuron is twice as strong as the other so that P<sub>1</sub> = 200 and P<sub>0</sub> = 400 than the delay period with respect to the first cone neuron would be: 5*(400/200)*T<sub>i</sub> = 10T<sub>i</sub>. So if both cone neurons were saturated for a period of time we would expect to see ten times more occurrences of the cone neuron with the higher potential.</p>
 							<p>Variance is introduced to both amplitude and width of the neuron impulse. The mean values and variance for each neuron are shown in the table below.</p>
 							<section>
 								<div class="table-wrapper">
@@ -215,8 +216,9 @@
 								</div>
 						</section>
 						<div align="center"><h2>Design Process and Challenges</h2></div>
-						<p>The enclosure for these were a big unknown and would stear the layout of the PCB so I started there. I was told each unit should resemble an eye and ear so my first eye attempt in CAD was composed of a sphere with an iris and pupil. In my head it looked close enough to an eye, but nobody else was impressed. Rev 1. My modeling skills in blender were lacking so I bought a model of an ear and eye online for cheap. I modified the mesh in blender to mate with the functional part I made in CAD that contained the annular snap and PCB mounts and joined the two meshes to produce an eye and ear shaped top. </p>
-						<p>The PCB was simple enough and just contained some transimpedance amps for the photodiodes and a microphone conditioning circuit. These fed into a microcontroller where I processed the signals with the integrated ADC and spit out the neuron impulses on an analog output. To generate the lookup table for the neuron impulse I just took a scan of an impulse from a textbook and traced it in Inkscape so I could just get the points. Then I exported the list of points and formatted them with excel to get even timing. I could manipulate the look of the neuron output by either multiplying the table by some scaling factor or by expanding or shrinking the time interval for outputting each point. My microcontroller had an onboard DSP so I could use the Arm CMSIS library to calculate an FFT for the ear which was surprisingly easy.</p>	
+						<p>The enclosure for these were a big unknown and would steer the layout of the PCB so I started there. I was told each unit should resemble an eye and ear so my first eye attempt in CAD was composed of a sphere with an iris and pupil. In my head it looked close enough to an eye, but nobody else was impressed. Rev 1. My modeling skills in blender were lacking so I bought a model of an ear and eye online for cheap. I modified the mesh in blender to mate with the functional part I made in CAD that contained the annular snap and PCB mounts and joined the two meshes to produce an eye and ear shaped top. </p>
+						<p>The PCB was simple enough and just contained some transimpedance amps for the photodiodes and a microphone conditioning circuit. These fed into a microcontroller where I processed the signals with the integrated ADC and spit out the neuron impulses on an analog output. To generate the lookup table for the neuron impulse I just took a scan of an impulse from a textbook and traced it in Inkscape so I could just get the points. Then I exported the list of points and formatted them with excel to get even timing. I could manipulate the look of the neuron output by either multiplying the table by some scaling factor or by expanding or shrinking the time interval for outputting each point. My microcontroller had an onboard DSP so I could use the Arm CMSIS library to calculate an FFT for the ear which was surprisingly easy.</p>
+						</div>
 					</div>
 
 				<!-- Footer -->
@@ -230,7 +232,7 @@
 							</ul>
 						</section>
 						<ul class="copyright">
-							Design: <a href="http://html5up.net">HTML5 UP</a>
+							<li>Design: <a href="http://html5up.net">HTML5 UP</a></li>
 						</ul>
 					</div>
 				</footer>
