@@ -2870,7 +2870,7 @@ figcaption {
 /* Header */
 
 	#header {
-		padding: 8em 0 0.1em 0 ;
+		padding: 2.5em 0 0.1em 0 ;
 	}
 
 		#header .logo {
@@ -2989,7 +2989,7 @@ figcaption {
 		@media screen and (max-width: 736px) {
 
 			#header {
-				padding: 4em 0 0.1em 0 ;
+				padding: 1em 0 0.1em 0 ;
 			}
 
 				#header nav {
